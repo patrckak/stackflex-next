@@ -26,8 +26,7 @@ export async function createUser(data: any) {
 
   //* cpf não existe.
   if (!userExits) {
-    let salt = bcrypt.genSalt(10);
-    let hashedPassword = bcrypt.hash(password, salt, async (e, result) => {
+    let hashedPassword = await bcrypt.hash(password, 10, async (e, result) => {
       if (result) {
         // criar usuário no prisma
       }
