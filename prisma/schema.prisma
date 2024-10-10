@@ -11,14 +11,25 @@ datasource db {
   relationMode = "prisma"
 }
 
-model Users {
-  id      Int      @id @unique @default(autoincrement())
-  name    String
-  email   String
-  cep     Int
-  storeID Int
-  cpf     BigInt?
-  cnpj    BigInt?
-  isPJ    Boolean
-  created DateTime @updatedAt
+model User {
+  id           BigInt   @id @unique
+  username     String
+  email        String
+  verification String?
+  password     String
+  LastModify   DateTime @updatedAt
+  avatar       String
+  storeOwnerId BigInt
+  relation     Store    @relation(fields: [storeOwnerId], references: [storeId])
+
+  @@index([storeOwnerId])
+}
+
+model Store {
+  storeId    BigInt   @id @unique
+  storeName  String
+  storeType  String
+  LastModify DateTime @updatedAt
+
+  User User[]
 }
