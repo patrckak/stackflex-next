@@ -12,24 +12,14 @@ datasource db {
 }
 
 model User {
-  id           BigInt   @id @unique
-  username     String
-  email        String
-  verification String?
-  password     String
-  LastModify   DateTime @updatedAt
-  avatar       String
-  storeOwnerId BigInt
-  relation     Store    @relation(fields: [storeOwnerId], references: [storeId])
-
-  @@index([storeOwnerId])
-}
-
-model Store {
-  storeId    BigInt   @id @unique
-  storeName  String
-  storeType  String
-  LastModify DateTime @updatedAt
-
-  User User[]
+  id                String   @id @unique
+  username          String
+  email             String
+  verification      String?
+  isVerificated     Boolean  @default(false)
+  password          String
+  LastModify        DateTime @updatedAt
+  avatar            String
+  cnpj              String?
+  enterpriseAccount Boolean  @default(false)
 }

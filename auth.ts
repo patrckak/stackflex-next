@@ -3,11 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import Credentials from "next-auth/providers/credentials";
-
-interface CredentialInput {
-  user: any;
-  password: any;
-}
+import { getUserAuth } from "@/lib/actions";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(Prisma),
@@ -19,25 +15,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   providers: [
     Credentials({
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
       credentials: {
-        user: { label: "Usuário", name: "user" },
+        user: { label: "CPF", name: "user" },
         password: { label: "Senha", type: "password", name: "password" },
-        async authorize(c: any) {
-          const user = await prisma?.users.findFirst({
-            where: { name: c.user },
-          });
-          let { name }: any = user;
-          if (c.user == name) {
-            return {
-              name: name,
-            };
-          }
-          if (!user) {
-            throw new Error("User not found.");
-          }
-        },
+      },
+
+      authorize: async (credentials) => {
+        const c = {
+          cpf: credentials?.user,
+          password: credentials?.password,
+        };
+
+        if (c) {
+          let user = await getUserAuth(c.cpf, c.password);
+          return user;
+        } else {
+          return null;
+        }
       },
     }),
   ],
