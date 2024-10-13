@@ -35,7 +35,9 @@ export default function NewUser() {
 
   const [avatar, setAvatar] = useState<any>(avatarUrl);
 
-  const [toggleStore, setToggleStore] = useState<boolean>(false);
+  const [useCNPJ, setUseCNPJ] = useState<boolean>(false);
+
+  const [storeType, setStoreType] = useState<number>(0);
 
   // TODO: mascarar input de cpf e cnpj
   const cpfMask = useMask({
@@ -44,7 +46,7 @@ export default function NewUser() {
   });
 
   const handleToggle = () => {
-    setToggleStore(!toggleStore);
+    setUseCNPJ(!useCNPJ);
   };
 
   const {
@@ -63,7 +65,7 @@ export default function NewUser() {
         variant: "destructive",
       });
     }
-    let a = await createUser(data);
+    let a = await createUser(data, useCNPJ, storeType);
     if (a.status === 0) {
       console.log(a);
       toast({
@@ -176,7 +178,7 @@ export default function NewUser() {
               </span>
               <input {...register("avatarurl")} value={avatar} hidden />
             </span>
-            {toggleStore ? (
+            {useCNPJ ? (
               <>
                 <Separator orientation="vertical" color="#000" />
                 <span className="flex flex-col gap-4 items-center">
@@ -193,28 +195,33 @@ export default function NewUser() {
                   </span>
                   <span>
                     <Label htmlFor="cnpj">Nome Fantásia</Label>
-                    <Input {...register("storeName")} name="storeName" />
+                    <Input
+                      {...register("storeName")}
+                      placeholder="Empresa LTDA"
+                      name="storeName"
+                    />
                   </span>
                   <span>
                     <Label htmlFor="storeDescription">Descrição Curta</Label>
                     <Input
                       {...register("storeDescription")}
+                      placeholder="Slogan..."
                       name="storeDescription"
                     />
                   </span>
-                  <span>
-                    <Select>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Theme" />
+                  <span className="w-[100%]">
+                    <Label htmlFor="storeType">Tipo</Label>
+                    <Select
+                      onValueChange={(value) => setStoreType(parseInt(value))}
+                    >
+                      <SelectTrigger name="storeType" className="w-[100%]">
+                        <SelectValue placeholder="Escolha" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="light">Light</SelectItem>
-                        <SelectItem value="dark">Dark</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
+                        <SelectItem value="1">Loja</SelectItem>
+                        <SelectItem value="2">Prestador de Serviço</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Label htmlFor="storeType">Tipo</Label>
-                    <Input {...register("storeType")} name="storeType" />
                   </span>
                 </span>
               </>

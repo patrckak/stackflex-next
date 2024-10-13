@@ -4,7 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { HashPassword } from "./crypt";
 import z from "zod";
 
-export async function createUser(data: any) {
+export async function createUser(
+  data: any,
+  useCNPJ: boolean,
+  storeType: number
+) {
   const { cpf, username, email, avatarurl, password, passwdr } = data;
 
   const user = z.object({
