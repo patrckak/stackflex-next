@@ -13,7 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Moon, Sun } from "lucide-react";
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+export function ThemeProvider({
+  children,
+  ...props
+}: Readonly<ThemeProviderProps>) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }
 

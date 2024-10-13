@@ -1,25 +1,47 @@
 "use client";
 
+import { createUser } from "@/components/db/createUser";
+import { ModeToggle } from "@/components/theme-provider";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { useMask } from "@react-input/mask";
 import "@uploadthing/react/styles.css";
-import { CircleAlert, ScrollText, User } from "lucide-react";
+import { ScrollText, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
-import { UploadButton } from "../../../../utils/uploadthing";
 import { useForm } from "react-hook-form";
-import CreateUser from "@/components/db/createUser";
-import { Toggle } from "@/components/ui/toggle";
-import { ModeToggle } from "@/components/theme-provider";
+import { UploadButton } from "../../../../utils/uploadthing";
 
 export default function NewUser() {
-  const [avatar, setAvatar] = useState<any>(
-    "https://utfs.io/f/SHkctA3zZK7UNJJh7RPsirWFqgMZSXO8ta0lynz9TEYoj2Hv"
-  );
+  const avatarUrl =
+    "https://utfs.io/f/SHkctA3zZK7UNJJh7RPsirWFqgMZSXO8ta0lynz9TEYoj2Hv";
+
+  // TODO: redirecionar
+  const router = useRouter();
+
+  const { toast } = useToast();
+
+  const [avatar, setAvatar] = useState<any>(avatarUrl);
 
   const [toggleStore, setToggleStore] = useState<boolean>(false);
+
+  // TODO: mascarar input de cpf e cnpj
+  const cpfMask = useMask({
+    mask: "000.000.000-00",
+    replacement: "0",
+  });
 
   const handleToggle = () => {
     setToggleStore(!toggleStore);
@@ -36,12 +58,25 @@ export default function NewUser() {
 
   const formSubmit = async (data: any) => {
     if (!data.cpf) {
-      return toast("CPF Inválido");
+      return toast({
+        description: "CPF inválido.",
+        variant: "destructive",
+      });
     }
-    let a = await CreateUser(data);
-    if (a) {
-      toast(a.msg);
+    let a = await createUser(data);
+    if (a.status === 0) {
+      console.log(a);
+      toast({
+        description: a.msg,
+        variant: "destructive",
+      });
+    } else if (a.status === 1) {
+      toast({
+        description: a.msg,
+        variant: "default",
+      });
     }
+    // router.replace("/api/auth/signin");
   };
 
   return (
@@ -49,18 +84,18 @@ export default function NewUser() {
       <span className="absolute top-30 right-30">
         <ModeToggle />
       </span>
-      <section className="p-10 h-screen w-screen dark:bg-gray-700 bg-zinc-200 flex overflow-scroll justify-center items-center">
-        <div>
-          <form
-            className="mt-10 flex flex-wrap flex-row gap-16 justify-center items-center"
-            onSubmit={handleSubmit(formSubmit)}
-          >
-            <span
-              className="
-          flex flex-col gap-2 justify-center bg-zinc-300 w-fit p-8 rounded-lg shadow-md
-          dark:bg-slate-900
+      <div className=" p-10 h-screen w-screen dark:bg-gray-700 bg-zinc-200 flex overflow-scroll justify-center items-center">
+        <form
+          className="mt-10 flex flex-wrap flex-row gap-16 justify-center items-center"
+          onSubmit={handleSubmit(formSubmit)}
+        >
+          <div
+            className="
+          flex flex-row gap-6 justify-center bg-zinc-300 w-fit p-8 rounded-lg shadow-md
+          dark:bg-slate-900 transition-all durantion-700 ease-in-out
           "
-            >
+          >
+            <span className="flex flex-col gap-4 items-center">
               <p className="font-bold text-lg flex items-center gap-1">
                 <User strokeWidth={2.5} /> Usuário
               </p>
@@ -92,14 +127,20 @@ export default function NewUser() {
                 <Label htmlFor="passwd">Senha</Label>
                 <Input
                   {...register("password")}
-                  name="passwd"
+                  name="password"
                   type="password"
                   placeholder="*********"
                 />
               </span>
               <span>
                 <Label htmlFor="passwdr">Confirme sua Senha</Label>
-                <Input name="passwdr" type="password" placeholder="*********" />
+
+                <Input
+                  {...register("passwdr")}
+                  name="passwdr"
+                  type="password"
+                  placeholder="*********"
+                />
               </span>
               <span className="flex flex-row gap-5 justify-center items-center">
                 <UploadButton
@@ -115,12 +156,9 @@ export default function NewUser() {
                       return `Arquivos até 4mb`;
                     },
                   }}
-                  className="mt-4 ut-button:bg-red-500 ut-button:ut-readying:bg-red-500/50"
+                  className=" mt-4 ut-button:bg-red-500 ut-button:ut-readying:bg-red-500/50"
                   endpoint="imageUploader"
                   onClientUploadComplete={(res) => {
-                    toast("Avatar definido com sucesso.", {
-                      icon: <CircleAlert size={18} />,
-                    });
                     let url = res.shift();
                     setAvatar(url?.appUrl.toString());
                   }}
@@ -132,22 +170,26 @@ export default function NewUser() {
                   <AvatarImage src={avatar} />
                 </Avatar>
               </span>
-              <Toggle onClick={handleToggle}>Conta PJ</Toggle>
+              <span className="flex gap-3 items-center m-auto">
+                <Checkbox name="pj" onClick={handleToggle} />
+                <Label htmlFor="pj">Conta PJ</Label>
+              </span>
               <input {...register("avatarurl")} value={avatar} hidden />
             </span>
             {toggleStore ? (
               <>
-                <span
-                  className="
-                flex flex-col gap-2 justify-center bg-zinc-300 w-fit p-8 rounded-lg shadow-md
-              dark:bg-slate-900"
-                >
+                <Separator orientation="vertical" color="#000" />
+                <span className="flex flex-col gap-4 items-center">
                   <p className="font-bold text-lg flex items-center gap-1">
                     <ScrollText strokeWidth={2.5} /> Empresa
                   </p>
                   <span>
                     <Label htmlFor="cnpj">CNPJ</Label>
-                    <Input {...register("cnpj")} name="cnpj" />
+                    <Input
+                      {...register("cnpj")}
+                      name="cnpj"
+                      placeholder="00 000 000/0000-00"
+                    />
                   </span>
                   <span>
                     <Label htmlFor="cnpj">Nome Fantásia</Label>
@@ -160,16 +202,30 @@ export default function NewUser() {
                       name="storeDescription"
                     />
                   </span>
+                  <span>
+                    <Select>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Theme" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="system">System</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Label htmlFor="storeType">Tipo</Label>
+                    <Input {...register("storeType")} name="storeType" />
+                  </span>
                 </span>
               </>
             ) : (
               <></>
             )}
+          </div>
 
-            <Button className="absolute bottom-8 right-8">Cadastrar</Button>
-          </form>
-        </div>
-      </section>
+          <Button className="absolute bottom-8 right-8">Cadastrar</Button>
+        </form>
+      </div>
     </>
   );
 }

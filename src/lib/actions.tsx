@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "../../auth";
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
+import { ComparePasswords } from "@/components/db/crypt";
 
 export async function getSession() {
   const session = await auth();
@@ -11,31 +12,17 @@ export async function getSession() {
 export async function getUserAuth(cpf: any, password: any) {
   let userExits = await prisma.user.findUnique({ where: { id: cpf } });
   if (userExits) {
-    if (userExits.password == password) {
-      return userExits;
+    const passwordMatch = await ComparePasswords(password, userExits.password);
+    if (passwordMatch) {
+      return {
+        id: userExits.id,
+        name: userExits.username,
+        image: userExits.avatar,
+        email: userExits.email,
+      };
     } else {
       return null;
     }
   }
   return null;
-}
-
-export async function createUser(data: any) {
-  const { cpf, username, email, avatarurl, password } = data;
-  let userExits = await prisma.user.findUnique({ where: { id: cpf } });
-
-  //* cpf não existe.
-  if (!userExits) {
-    let hashedPassword = await bcrypt.hash(password, 10, async (e, result) => {
-      if (result) {
-        // criar usuário no prisma
-      }
-    });
-    return {
-      status: 1,
-      msg: "Usuário registrado, assim que possível verifique seu e-mail.",
-    };
-  } else {
-    return { status: 0, msg: "CPF já cadastrado." };
-  }
 }
