@@ -1,5 +1,3 @@
 export default function EmailValidation() {
-  return (
-    <div>page</div>
-  )
+  return <div>page</div>;
 }

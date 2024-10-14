@@ -2,46 +2,72 @@
 
 import { prisma } from "@/lib/prisma";
 import { HashPassword } from "./crypt";
-import z from "zod";
+import { gerarValidação } from "./genValidation";
 
 export async function createUser(
   data: any,
   useCNPJ: boolean,
   storeType: number
 ) {
-  const { cpf, username, email, avatarurl, password, passwdr } = data;
+  const {
+    cpf,
+    username,
+    email,
+    avatarurl,
+    password,
+    passwdr,
+    cnpj,
+    storeName,
+    storeDescription,
+  } = data;
 
-  const user = z.object({
-    cpf: z.number().max(11).nonnegative(),
-    username: z.string(),
-    email: z.string().email(),
-    password: z.string(),
-  });
-
+  //? != undefined = cpf já cadastrado
   const userExits = await prisma.user.findUnique({ where: { id: cpf } });
-  //* cpf não existe.
   if (!userExits) {
-    //* senhas são iguais
-    if (password === passwdr) {
-      let hash = await HashPassword(password);
-      if (hash) {
-        // TODO: fazer verificações com zod.
+    let hash = await HashPassword(password);
 
-        let userCreated = await prisma.user.create({
+    if (hash) {
+      if (useCNPJ) {
+        var store = await prisma.store.create({
+          data: {
+            id: cnpj,
+            name: storeName,
+            type: storeType,
+          },
+        });
+        if (store) {
+          let user = await prisma.user.create({
+            data: {
+              id: cpf,
+              username: username,
+              email: email,
+              avatar: avatarurl,
+              password: hash,
+              verification: await gerarValidação(),
+              storeId: store.id,
+              enterpriseAccount: true,
+            },
+          });
+          if (user) return { status: 1, msg: "Registro criado." };
+        }
+      } else {
+        let user = await prisma.user.create({
           data: {
             id: cpf,
             username: username,
             email: email,
             avatar: avatarurl,
+            verification: await gerarValidação(),
             password: hash,
           },
         });
-        if (userCreated) return { status: 1, msg: "Registrado." };
+        if (user) return { status: 1, msg: "Registro criado." };
       }
     } else {
-      return { status: 0, msg: "Senhas não são idênticas." };
+      return { status: 0, msg: "Erro interno, Código 001" };
     }
+    // do
   } else {
-    return { status: 0, msg: "CPF já está registrado." };
+    return { status: 0, msg: "CPF já registrado." };
   }
 }

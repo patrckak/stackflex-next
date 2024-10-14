@@ -194,7 +194,7 @@ export default function NewUser() {
                     />
                   </span>
                   <span>
-                    <Label htmlFor="cnpj">Nome Fantásia</Label>
+                    <Label htmlFor="storeName">Nome Fantásia</Label>
                     <Input
                       {...register("storeName")}
                       placeholder="Empresa LTDA"

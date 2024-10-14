@@ -3,13 +3,14 @@
 import { ModeToggle } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent } from "react";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 export default function Home() {
   const { data: session } = useSession();
 
+  console.log(session);
   const router = useRouter();
 
   const handleClick = (e: MouseEvent, p: string) => {

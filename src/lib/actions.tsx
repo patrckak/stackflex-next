@@ -18,7 +18,9 @@ export async function getUserAuth(cpf: any, password: any) {
         id: userExits.id,
         name: userExits.username,
         image: userExits.avatar,
+        role: userExits.type,
         email: userExits.email,
+        isVerified: userExits.isVerificated,
       };
     } else {
       return null;
