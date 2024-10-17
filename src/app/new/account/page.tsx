@@ -20,30 +20,21 @@ import { useMask } from "@react-input/mask";
 import "@uploadthing/react/styles.css";
 import { ScrollText, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { UploadButton } from "../../../../utils/uploadthing";
 
 export default function NewUser() {
-  const avatarUrl =
+  var avatarUrl =
     "https://utfs.io/f/SHkctA3zZK7UNJJh7RPsirWFqgMZSXO8ta0lynz9TEYoj2Hv";
-
-  // TODO: redirecionar
-  const router = useRouter();
 
   const { toast } = useToast();
 
-  const [avatar, setAvatar] = useState<any>(avatarUrl);
+  const [avatar, setAvatar] = useState<any>("");
 
   const [useCNPJ, setUseCNPJ] = useState<boolean>(false);
 
   const [storeType, setStoreType] = useState<number>(0);
-
-  // TODO: mascarar input de cpf e cnpj
-  const cpfMask = useMask({
-    mask: "000.000.000-00",
-    replacement: "0",
-  });
 
   const handleToggle = () => {
     setUseCNPJ(!useCNPJ);
@@ -65,7 +56,7 @@ export default function NewUser() {
         variant: "destructive",
       });
     }
-    let a = await createUser(data, useCNPJ, storeType);
+    let a = await createUser(data, useCNPJ, storeType, avatar);
     if (a.status === 0) {
       console.log(a);
       toast({
@@ -162,10 +153,14 @@ export default function NewUser() {
                   endpoint="imageUploader"
                   onClientUploadComplete={(res) => {
                     let url = res.shift();
-                    setAvatar(url?.appUrl.toString());
+                    let formatedUrl = url?.appUrl.toString();
+                    console.log(formatedUrl);
+                    setAvatar(formatedUrl);
                   }}
                   onUploadError={(error: Error) => {
-                    alert(`${error}`);
+                    alert(
+                      "Erro ao registrar avatar, caso o erro continue reporte ao suporte."
+                    );
                   }}
                 />
                 <Avatar className="mb-3">
@@ -176,7 +171,6 @@ export default function NewUser() {
                 <Checkbox name="pj" onClick={handleToggle} />
                 <Label htmlFor="pj">Conta PJ</Label>
               </span>
-              <input {...register("avatarurl")} value={avatar} hidden />
             </span>
             {useCNPJ ? (
               <>

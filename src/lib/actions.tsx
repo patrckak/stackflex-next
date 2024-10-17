@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "../../auth";
-import * as bcrypt from "bcryptjs";
 import { ComparePasswords } from "@/components/db/crypt";
 
 export async function getSession() {

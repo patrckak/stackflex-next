@@ -12,21 +12,34 @@ datasource db {
 }
 
 model User {
-  id                String   @id @unique // CPF
-  private_id        String   @unique @default(cuid())
+  id                String    @id @unique // CPF
+  private_id        String    @unique @default(cuid())
   username          String
   email             String
-  type              Int      @default(0) // permissões criticas do sistema
+  type              Int       @default(0) // permissões criticas do sistema
   verification      String?
-  isVerificated     Boolean  @default(false) // se o email é verificado ou não
+  isVerificated     Boolean   @default(false) // se o email é verificado ou não
   password          String
-  LastModify        DateTime @updatedAt
-  avatar            String
-  enterpriseAccount Boolean  @default(false)
-  storeRelation     Store?   @relation(fields: [storeId], references: [id])
+  LastModify        DateTime  @updatedAt
+  avatar            String    @default("https://utfs.io/f/SHkctA3zZK7UNJJh7RPsirWFqgMZSXO8ta0lynz9TEYoj2Hv")
+  enterpriseAccount Boolean   @default(false)
+  storeRelation     Store?    @relation(fields: [storeId], references: [id])
   storeId           String?
+  Account           Account[]
 
   @@index([storeId])
+}
+
+model Account {
+  id          String  @id
+  theme       String  @default("sys") // sys = system pref | drk = dark theme | lgt = light theme
+  usePDV      Boolean @default(false) // Ponto de Venda
+  useStock    Boolean @default(false) // Gestão de estoque
+  useFinance  Boolean @default(false) // Gestão Financeira
+  useWhatsapp Boolean @default(false) // Integração com Whatsapp
+  useChild    Boolean @default(false) // Criação de contas "filhas"
+
+  relation User @relation(fields: [id], references: [private_id])
 }
 
 model Store {

@@ -8,7 +8,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(Prisma),
   secret: process.env.AUTH_SECRET,
   callbacks: {
-    //TODO: passar dados do usuário via session
+    async jwt({ token, user }: any) {
+      /* Step 1: update the token based on the user object */
+      if (user) {
+        token.name = user.name;
+        token.email = user.email;
+        token.image = user.image;
+        token.isVerified = user.isVerified;
+        token.role = user.role;
+        token.storeId = user.storeId;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      /* Step 2: update the session.user based on the token object */
+      if (token && session.user) {
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.picture;
+        session.user.isVerified = token.isVerified;
+        session.user.role = token.role;
+        session.user.storeId = token.storeId;
+      }
+      return session;
+    },
   },
   session: {
     strategy: "jwt",

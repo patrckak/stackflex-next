@@ -7,13 +7,13 @@ import { gerarValidação } from "./genValidation";
 export async function createUser(
   data: any,
   useCNPJ: boolean,
-  storeType: number
+  storeType: number,
+  avatarUrl: string
 ) {
   const {
     cpf,
     username,
     email,
-    avatarurl,
     password,
     passwdr,
     cnpj,
@@ -36,12 +36,13 @@ export async function createUser(
           },
         });
         if (store) {
+          console.log(avatarUrl);
           let user = await prisma.user.create({
             data: {
               id: cpf,
               username: username,
               email: email,
-              avatar: avatarurl,
+              avatar: avatarUrl,
               password: hash,
               verification: await gerarValidação(),
               storeId: store.id,
@@ -56,7 +57,7 @@ export async function createUser(
             id: cpf,
             username: username,
             email: email,
-            avatar: avatarurl,
+            avatar: avatarUrl,
             verification: await gerarValidação(),
             password: hash,
           },
