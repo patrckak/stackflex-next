@@ -3,13 +3,53 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Prisma } from "@prisma/client";
 import Credentials from "next-auth/providers/credentials";
 import { getUserAuth } from "@/lib/actions";
+import type { Provider } from "next-auth/providers";
+
+const providers: Provider[] = [
+  Credentials({
+    credentials: {
+      user: { label: "CPF", name: "user" },
+      password: { label: "Senha", type: "password", name: "password" },
+    },
+
+    authorize: async (credentials) => {
+      const c = {
+        cpf: credentials?.user,
+        password: credentials?.password,
+      };
+
+      if (c) {
+        let user = await getUserAuth(c.cpf, c.password);
+        return user;
+      } else {
+        return null;
+      }
+    },
+  }),
+];
+
+export const providerMap = providers
+  .map((provider) => {
+    if (typeof provider === "function") {
+      const providerData = provider();
+      return { id: providerData.id, name: providerData.name };
+    } else {
+      return { id: provider.id, name: provider.name };
+    }
+  })
+  .filter((provider) => provider.id !== "credentials");
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  pages: {
+    signIn: "/auth/login",
+    signOut: "/auth/signout",
+  },
+  providers,
   adapter: PrismaAdapter(Prisma),
   secret: process.env.AUTH_SECRET,
   callbacks: {
     async jwt({ token, user }: any) {
-      /* Step 1: update the token based on the user object */
+      /* TODO adicionar refresh token ao session object  */
       if (user) {
         token.name = user.name;
         token.email = user.email;
@@ -21,7 +61,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
     session({ session, token }) {
-      /* Step 2: update the session.user based on the token object */
       if (token && session.user) {
         session.user.name = token.name;
         session.user.email = token.email;
@@ -38,26 +77,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 30 * 24 * 60 * 60,
     updateAge: 24 * 60 * 60,
   },
-  providers: [
-    Credentials({
-      credentials: {
-        user: { label: "CPF", name: "user" },
-        password: { label: "Senha", type: "password", name: "password" },
-      },
-
-      authorize: async (credentials) => {
-        const c = {
-          cpf: credentials?.user,
-          password: credentials?.password,
-        };
-
-        if (c) {
-          let user = await getUserAuth(c.cpf, c.password);
-          return user;
-        } else {
-          return null;
-        }
-      },
-    }),
-  ],
 });
