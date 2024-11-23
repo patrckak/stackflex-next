@@ -8,6 +8,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Button } from "./button";
 
 export default function Header({ session }) {
   function greets() {
@@ -25,18 +27,30 @@ export default function Header({ session }) {
 
   if (session) {
     return (
-      <header className="p-5 flex h-[60px] flex-row gap-3 justify-between items-center">
+      <header className="p-5 bg-gray-300 dark:bg-gray-600 flex h-[60px] flex-row gap-3 justify-between items-center sticky top-0 shadow-md">
         <h4 className="relative left-4 font-black text-pretty text-lg">
           StackFlex
         </h4>
         <span>
           <ul className="flex list-none flex-row gap-5 justify-between">
-            <li className="flex gap-1 items-center">Dashboard</li>
-            <li className="flex gap-1 items-center">ERP</li>
-            <li className="flex gap-1 items-center">Dashboard</li>
+            <li className="flex gap-1 items-center">
+              <Button onClick={() => redirect("/app/dashboard")} variant="link">
+                Dashboard
+              </Button>
+            </li>
+            <li className="flex gap-1 items-center">
+              <Button onClick={() => redirect("/app/estoque")} variant="link">
+                Estoque
+              </Button>
+            </li>
+            <li className="flex gap-1 items-center">
+              <Button onClick={() => redirect("/app/servicos")} variant="link">
+                Serviços
+              </Button>
+            </li>
           </ul>
         </span>
-        <span className="">
+        <span className="relative right-4 ">
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar>
@@ -46,7 +60,6 @@ export default function Header({ session }) {
             <DropdownMenuContent>
               <DropdownMenuLabel>{session.user.name}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Pagamentos</DropdownMenuItem>
               <DropdownMenuItem>Perfil</DropdownMenuItem>
               <DropdownMenuItem>Configuração</DropdownMenuItem>

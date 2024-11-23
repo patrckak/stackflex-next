@@ -6,6 +6,7 @@ import Header from "@/components/ui/header-session";
 import Layout from "./layout";
 import ThemedSection from "../../../../components/ui/themedSection";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/theme-provider";
 
 export default function Dashboard() {
   const {
@@ -20,6 +21,9 @@ export default function Dashboard() {
       <Layout>
         <Header session={session} />
         <ThemedSection>Olá {session.user?.name}</ThemedSection>
+        <span className="absolute">
+          <ModeToggle />
+        </span>
       </Layout>
     );
   } else {
