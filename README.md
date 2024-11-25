@@ -5,4 +5,7 @@
 ## TODOs
 
 * [ ] Adicionar autenticação com google oAuth
-* [ ] Re-design de toda landpage.
+* [x] Re-design de toda landpage.
+* [ ] Sistema de estoque
+* [ ] Sistema de Serviços / Orçamentos
+* [ ] Aprovação de orçamentos via links
