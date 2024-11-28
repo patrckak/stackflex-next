@@ -44,11 +44,7 @@ export const formSchema = z
     }),
 
     // EMPRESA
-    cnpj: z
-      .string({ required_error: "Em branco." })
-      .max(14, "Valor inválido.")
-      .min(14, "Valor inválido.") // valida se as duas senhas batem
-      .optional(),
+    cnpj: z.string({ required_error: "Em branco." }).optional(),
     nomeEmpresa: z.string({ required_error: "Em branco." }).optional(),
     endereco: z.string({ required_error: "Em branco." }),
     cep: z.string({ required_error: "Em branco." }),

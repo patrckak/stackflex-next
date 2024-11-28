@@ -1,11 +1,6 @@
 "use client";
+import { createUser } from "@/components/db/createUser";
 import { Button } from "@/components/ui/button";
-import ThemedSection from "@/components/ui/themedSection";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import Layout from "./layout";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -16,16 +11,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { SubmitHandler, useForm } from "react-hook-form";
+import ThemedSection from "@/components/ui/themedSection";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formSchema } from "../../../../utils/schemas";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { useHookFormMask } from "use-mask-input";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+import { formSchema } from "../../../../utils/schemas";
+import Layout from "./layout";
 
 export default function AccountRegister() {
   const { data: session, status } = useSession();
 
   const { register, handleSubmit } = useForm();
+
+  const { toast } = useToast();
 
   const mask = useHookFormMask(register);
 
@@ -33,7 +35,15 @@ export default function AccountRegister() {
     resolver: zodResolver(formSchema),
   });
 
-  const submit = (data) => console.log(data);
+  const submit = async (data) => {
+    let res = await createUser(data);
+    if (res.status == 1) {
+      return redirect("/new/prices");
+    } else {
+      return toast({ description: res.msg, variant: "destructive" });
+    }
+  };
+
   const buscarCEP = async () => {
     let v = form.getValues().cep;
     let r = await fetch(`https://brasilapi.com.br/api/cep/v1/${v}`, {
@@ -88,7 +98,11 @@ export default function AccountRegister() {
                       <FormItem>
                         <FormLabel>CPF</FormLabel>
                         <FormControl>
-                          <Input placeholder="000 000 000 00" {...field} />
+                          <Input
+                            maxLength={11}
+                            placeholder="000 000 000 00"
+                            {...field}
+                          />
                         </FormControl>
                         <FormDescription>
                           Apenas os números do seu CPF. :D
@@ -170,7 +184,11 @@ export default function AccountRegister() {
                       <FormItem onBlur={buscarCEP}>
                         <FormLabel>CEP</FormLabel>
                         <FormControl>
-                          <Input placeholder="" {...field} />
+                          <Input
+                            maxLength={8}
+                            placeholder="000000000"
+                            {...field}
+                          />
                         </FormControl>
                         <FormDescription>Apenas os números.</FormDescription>
                         <FormMessage />
@@ -217,7 +235,11 @@ export default function AccountRegister() {
                       <FormItem>
                         <FormLabel>CNPJ</FormLabel>
                         <FormControl>
-                          <Input placeholder="00 000 000 0000 00" {...field} />
+                          <Input
+                            maxLength={14}
+                            placeholder="00 000 000 0000 00"
+                            {...field}
+                          />
                         </FormControl>
                         <FormDescription>
                           CNPJ sem digitos. (caso tenha)

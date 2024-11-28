@@ -36,16 +36,24 @@ export async function validarCPF(cpf: string) {
   return true;
 }
 
+export async function testRawQuery() {
+  let res = await prisma.$queryRaw`SELECT * FROM user`;
+  console.log(res);
+}
+
+export async function createEstimate(data: any) {
+  const { cpf, date, desc, client, clientNumber, clientAddress } = data;
+}
+
 export async function getUserAuth(cpf: any, password: any) {
-  let userExits = await prisma.user.findUnique({ where: { id: cpf } });
+  let userExits = await prisma.user.findUnique({ where: { public_id: cpf } });
   if (userExits) {
     const passwordMatch = await ComparePasswords(password, userExits.password);
     if (passwordMatch) {
       return {
         id: userExits.id,
-        name: userExits.username,
+        name: userExits.firstname,
         image: userExits.avatar,
-        role: userExits.type,
         email: userExits.email,
         isVerified: userExits.isVerificated,
       };

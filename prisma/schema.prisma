@@ -12,22 +12,25 @@ datasource db {
 }
 
 model User {
-  id                String    @id @unique // CPF
-  private_id        String    @unique @default(cuid())
-  username          String
-  email             String
-  type              Int       @default(0) // permissões criticas do sistema
-  verification      String?
-  isVerificated     Boolean   @default(false) // se o email é verificado ou não
-  password          String
-  LastModify        DateTime  @updatedAt
-  avatar            String    @default("https://utfs.io/f/SHkctA3zZK7UNJJh7RPsirWFqgMZSXO8ta0lynz9TEYoj2Hv")
-  enterpriseAccount Boolean   @default(false)
-  storeRelation     Store?    @relation(fields: [storeId], references: [id])
-  storeId           String?
-  Account           Account[]
-
-  @@index([storeId])
+  public_id     String         @id @unique // CPF
+  id            String         @unique @default(cuid())
+  firstname     String
+  lastname      String
+  email         String
+  verification  String?
+  isVerificated Boolean        @default(false) // se o email é verificado ou não
+  password      String
+  LastModify    DateTime       @updatedAt
+  cep           String
+  cidade        String
+  endereco      String
+  avatar        String         @default("https://utfs.io/f/SHkctA3zZK7UNJJh7RPsirWFqgMZSXO8ta0lynz9TEYoj2Hv")
+  cnpj          String?
+  razao         String?
+  Account       Account[]
+  Funcionarios  Funcionarios[]
+  Client        Client[]
+  Estimates     Estimates[]
 }
 
 model Account {
@@ -39,13 +42,32 @@ model Account {
   useWhatsapp Boolean @default(false) // Integração com Whatsapp
   useChild    Boolean @default(false) // Criação de contas "filhas"
 
-  relation User @relation(fields: [id], references: [private_id])
+  relation User @relation(fields: [id], references: [id])
 }
 
-model Store {
-  id         String @id @unique
-  private_id String @unique @default(cuid())
-  name       String
-  type       Int
-  User       User[]
+model Funcionarios {
+  id    String  @id
+  email String? @unique
+  cpf   String? @unique
+
+  relation2 User @relation(fields: [id], references: [id])
+}
+
+model Estimates {
+  // Orçamentos
+  id       String @id
+  clientId String
+
+  r4 User @relation(fields: [id], references: [id])
+}
+
+model Client {
+  id      String  @id
+  userId  String
+  address String?
+  contact String?
+
+  r3 User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }

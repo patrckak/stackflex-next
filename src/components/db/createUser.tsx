@@ -4,71 +4,78 @@ import { prisma } from "@/lib/prisma";
 import { HashPassword } from "./crypt";
 import { gerarValidação } from "./genValidation";
 
-export async function createUser(
-  data: any,
-  useCNPJ: boolean,
-  storeType: number,
-  avatarUrl: string
-) {
+export async function createUser(data: any) {
   const {
     cpf,
-    username,
+    firstname,
+    lastname,
     email,
     password,
-    passwdr,
     cnpj,
-    storeName,
-    storeDescription,
+    nomeEmpresa,
+    endereco,
+    cep,
+    cidade,
   } = data;
 
   //? != undefined = cpf já cadastrado
-  const userExits = await prisma.user.findUnique({ where: { id: cpf } });
+  const userExits = await prisma.user.findUnique({ where: { public_id: cpf } });
   if (!userExits) {
     let hash = await HashPassword(password);
 
     if (hash) {
-      if (useCNPJ) {
-        var store = await prisma.store.create({
+      if (cnpj != undefined) {
+        let user = await prisma.user.create({
           data: {
-            id: cnpj,
-            name: storeName,
-            type: storeType,
+            public_id: cpf,
+            email: email,
+            firstname: firstname,
+            lastname: lastname,
+            password: hash,
+            isVerificated: false,
+            cep: cep,
+            cidade: cidade,
+            endereco: endereco,
+            razao: nomeEmpresa,
+            cnpj: cnpj,
+            verification: await gerarValidação(),
+            Account: { create: {} },
           },
         });
-        if (store) {
-          console.log(avatarUrl);
-          let user = await prisma.user.create({
-            data: {
-              id: cpf,
-              username: username,
-              email: email,
-              avatar: avatarUrl,
-              password: hash,
-              verification: await gerarValidação(),
-              storeId: store.id,
-              enterpriseAccount: true,
-            },
-          });
-          if (user) return { status: 1, msg: "Registro criado." };
-        }
+
+        let private_id = [user.id];
+
+        if (user) return { status: 1, msg: "Registro criado." };
       } else {
         let user = await prisma.user.create({
           data: {
-            id: cpf,
-            username: username,
+            public_id: cpf,
             email: email,
-            avatar: avatarUrl,
-            verification: await gerarValidação(),
+            firstname: firstname,
+            lastname: lastname,
             password: hash,
+            isVerificated: false,
+            cep: cep,
+            cidade: cidade,
+            endereco: endereco,
+            verification: await gerarValidação(),
+            Account: { create: {} },
           },
         });
-        if (user) return { status: 1, msg: "Registro criado." };
+        if (user) {
+          return {
+            status: 1,
+            msg: "Usuário cadastrado, você será redirecionado.",
+          };
+        } else {
+          return { status: 0, msg: "Erro interno ao registrar o usuário." };
+        }
       }
-    } else {
-      return { status: 0, msg: "Erro interno, Código 001" };
     }
-    // do
   } else {
-    return { status: 0, msg: "CPF já registrado." };
+    return {
+      status: 0,
+      msg: "CPF já registrado. Vá para parte de login por favor.",
+    };
   }
 }
